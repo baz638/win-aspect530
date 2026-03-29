@@ -7,17 +7,17 @@
     body {
         margin: 0;
         height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         background: #0f0f0f;
         font-family: Arial, sans-serif;
-        overflow: hidden;
         color: white;
+        display: flex;
+        flex-direction: column;
     }
 
-    .container {
+    .top {
         text-align: center;
+        margin-top: 100px;
+        transition: 0.5s;
     }
 
     h1 {
@@ -31,7 +31,7 @@
     }
 
     .search-box {
-        margin-top: 30px;
+        margin-top: 20px;
         display: flex;
         justify-content: center;
     }
@@ -53,17 +53,27 @@
         background: #1f1f1f;
         color: white;
         border-radius: 0 30px 30px 0;
-        transition: 0.2s;
     }
 
-    button:hover {
-        background: #333;
+    iframe {
+        flex: 1;
+        width: 100%;
+        border: none;
+        display: none;
+    }
+
+    .version {
+        position: fixed;
+        bottom: 10px;
+        right: 15px;
+        font-size: 14px;
+        opacity: 0.6;
     }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="top" id="topArea">
     <h1>Aspect Browser</h1>
 
     <div class="search-box">
@@ -72,15 +82,22 @@
     </div>
 </div>
 
+<iframe id="browserFrame"></iframe>
+
+<div class="version">version 1.01 aspect</div>
+
 <script>
 function search() {
     let query = document.getElementById("searchInput").value;
     if(query.trim() !== "") {
-        window.location.href = "https://duckduckgo.com/?q=" + encodeURIComponent(query);
+        let frame = document.getElementById("browserFrame");
+        frame.src = "https://duckduckgo.com/?q=" + encodeURIComponent(query);
+
+        frame.style.display = "block";
+        document.getElementById("topArea").style.marginTop = "10px";
     }
 }
 
-// ENTER key support
 document.getElementById("searchInput").addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
         search();
