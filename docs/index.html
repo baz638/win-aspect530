@@ -1,257 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Aspect Browser</title>
 
 <style>
 :root {
-    --bg: linear-gradient(135deg, #1a0033, #000000);
+    --bg: linear-gradient(135deg,#1a0033,#000);
     --anim: all 0.4s ease;
 }
 
 body {
-    margin: 0;
-    height: 100vh;
-    background: var(--bg);
-    font-family: Arial;
-    color: white;
-    overflow: hidden;
-}
-
-/* PARTICLES */
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 0;
-}
-
-/* TOPBAR */
-.topbar {
-    display: none;
-    background: rgba(0,0,0,0.7);
-    padding: 10px;
-    align-items: center;
-    gap: 10px;
-}
-
-.topbar input {
-    flex: 1;
-    padding: 8px;
-    border-radius: 10px;
-    border: none;
-}
-
-/* BUTTONS */
-button {
-    background: #2a2a2a;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: var(--anim);
-}
-button:hover {
-    background: #444;
-}
-
-/* HOME */
-.home {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    transition: var(--anim);
-    z-index: 1;
-}
-
-h1 {
-    font-size: 70px;
-    text-shadow: 0 0 20px purple, 0 0 40px white;
-    animation: fade 2s forwards;
-}
-
-@keyframes fade {
-    from {opacity:0; transform: translateY(20px);}
-    to {opacity:1; transform: translateY(0);}
-}
-
-.search {
-    margin-top: 20px;
-}
-
-.search input {
-    padding: 15px;
-    width: 400px;
-    border-radius: 30px;
-    border: none;
-}
-
-/* IFRAME */
-iframe {
-    width: 100%;
-    height: calc(100% - 50px);
-    border: none;
-    display: none;
+    margin:0;
+    height:100vh;
+    background:var(--bg);
+    color:white;
+    font-family:Arial;
+    overflow:hidden;
 }
 
 /* SIDEBAR */
 .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 200px;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    padding: 10px;
-    z-index: 2;
+    position:fixed;
+    left:0;
+    top:0;
+    width:60px;
+    height:100%;
+    background:#0a0a0a;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding-top:10px;
+    transition:var(--anim);
+}
+.sidebar button {
+    width:40px;
+    height:40px;
+    border-radius:10px;
 }
 
-.settingsPanel {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 200px;
-    width: 300px;
-    height: 100%;
-    background: #111;
-    padding: 10px;
+/* SETTINGS FULLSCREEN */
+.settings {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#0f0f0f;
+    display:none;
+    flex-direction:column;
+    padding:30px;
+    z-index:5;
+    gap:20px;
+}
+
+.row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px;
+    border-bottom:1px solid #333;
+}
+
+/* TOPBAR */
+.topbar {
+    display:none;
+    position:fixed;
+    top:0;
+    width:100%;
+    background:#111;
+    padding:10px;
+    display:flex;
+    gap:10px;
+}
+.topbar input {
+    flex:1;
+    padding:8px;
+}
+
+/* HOME */
+.home {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    transition:var(--anim);
+}
+
+h1 {
+    font-size:70px;
+    text-shadow:0 0 20px purple,0 0 50px white;
+}
+
+/* FRAME */
+iframe {
+    width:100%;
+    height:100%;
+    border:none;
+    display:none;
 }
 
 /* VERSION */
 .version {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    opacity: 0.6;
+    position:fixed;
+    bottom:10px;
+    right:10px;
+    opacity:0.6;
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="particles"></canvas>
-
-<div class="sidebar">
-    <button onclick="openSettings()">Settings</button>
+<div class="sidebar" id="sidebar">
+    <button onclick="openSettings()">⚙️</button>
 </div>
 
-<div class="settingsPanel" id="settings">
-    <button onclick="closeSettings()">← Back</button>
-    <h3>Theme</h3>
+<div class="settings" id="settings">
+    <h2>Settings</h2>
 
-    <button onclick="setGradient('purple')">Purple</button>
-    <button onclick="setGradient('blue')">Blue</button>
-    <button onclick="setGradient('red')">Red</button>
+    <div class="row">
+        <span>Animations</span>
+        <input type="checkbox" id="animToggle" checked>
+    </div>
 
-    <h3>Options</h3>
-    <label><input type="checkbox" id="particlesToggle" checked> Particles</label><br>
-    <label><input type="checkbox" id="animToggle" checked> Animations</label><br><br>
+    <div class="row">
+        <span>Theme</span>
+        <div>
+            <button onclick="setTheme('purple')">Purple</button>
+            <button onclick="setTheme('blue')">Blue</button>
+            <button onclick="setTheme('red')">Red</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <span>Particles</span>
+        <input type="checkbox" id="particlesToggle" checked>
+    </div>
 
     <button onclick="saveSettings()">Save</button>
+    <button onclick="closeSettings()">Back</button>
 </div>
 
 <div class="topbar" id="topbar">
-    <button onclick="goBack()">←</button>
-    <button onclick="goForward()">→</button>
-    <button onclick="goHome()">🏠</button>
-    <input id="urlBar">
+    <button onclick="back()">←</button>
+    <button onclick="forward()">→</button>
+    <button onclick="home()">🏠</button>
+    <input id="urlBar" placeholder="Enter URL or search">
 </div>
 
 <div class="home" id="home">
     <h1>Aspect Browser</h1>
-    <div class="search">
-        <input id="searchInput" placeholder="Search...">
-    </div>
+    <input id="searchInput" placeholder="Search or URL">
 </div>
 
 <iframe id="frame"></iframe>
 
-<div class="version">version 1.02 aspect</div>
+<div class="version">version 1.03 aspect</div>
 
 <script>
-// SEARCH
-function search(q){
-    let query = q || document.getElementById("searchInput").value;
-    if(!query) return;
+// proxy endpoint (change if needed)
+const proxy = "https://api.allorigins.win/raw?url=";
 
-    let frame = document.getElementById("frame");
-    frame.src = "https://lite.duckduckgo.com/lite/?q=" + encodeURIComponent(query);
+// LOAD PAGE
+function go(input){
+    let url = input;
 
-    frame.style.display = "block";
-    document.getElementById("home").style.display = "none";
-    document.getElementById("topbar").style.display = "flex";
-    document.getElementById("urlBar").value = query;
+    if(!url.startsWith("http")){
+        url = "https://duckduckgo.com/?q=" + input;
+    }
+
+    document.getElementById("frame").src = proxy + encodeURIComponent(url);
+
+    document.getElementById("frame").style.display="block";
+    document.getElementById("home").style.display="none";
+    document.getElementById("topbar").style.display="flex";
+    document.getElementById("sidebar").style.display="none";
+
+    document.getElementById("urlBar").value = url;
 }
 
-// ENTER KEY
+// ENTER SEARCH
 document.getElementById("searchInput").addEventListener("keydown", e=>{
-    if(e.key==="Enter") search();
+    if(e.key==="Enter") go(e.target.value);
+});
+
+// URL BAR ENTER
+document.getElementById("urlBar").addEventListener("keydown", e=>{
+    if(e.key==="Enter") go(e.target.value);
 });
 
 // NAV
-function goBack(){ document.getElementById("frame").contentWindow.history.back(); }
-function goForward(){ document.getElementById("frame").contentWindow.history.forward(); }
-function goHome(){
+function back(){ history.back(); }
+function forward(){ history.forward(); }
+
+function home(){
     document.getElementById("frame").style.display="none";
     document.getElementById("home").style.display="block";
     document.getElementById("topbar").style.display="none";
+    document.getElementById("sidebar").style.display="flex";
 }
 
 // SETTINGS
 function openSettings(){
-    document.getElementById("settings").style.display="block";
+    document.getElementById("settings").style.display="flex";
 }
+
 function closeSettings(){
     document.getElementById("settings").style.display="none";
 }
 
-function setGradient(type){
+function setTheme(type){
     if(type==="purple") document.body.style.background="linear-gradient(135deg,#1a0033,#000)";
     if(type==="blue") document.body.style.background="linear-gradient(135deg,#001f3f,#000)";
     if(type==="red") document.body.style.background="linear-gradient(135deg,#3f0000,#000)";
 }
 
 function saveSettings(){
-    let particles = document.getElementById("particlesToggle").checked;
     let anim = document.getElementById("animToggle").checked;
-
-    document.getElementById("particles").style.display = particles ? "block":"none";
     document.documentElement.style.setProperty("--anim", anim ? "all 0.4s ease":"none");
 }
-
-// PARTICLES
-let canvas = document.getElementById("particles");
-let ctx = canvas.getContext("2d");
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let particles = [];
-
-for(let i=0;i<100;i++){
-    particles.push({
-        x: Math.random()*canvas.width,
-        y: Math.random()*canvas.height,
-        speed: Math.random()*2+1
-    });
-}
-
-function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle="white";
-
-    particles.forEach(p=>{
-        ctx.fillRect(p.x,p.y,2,2);
-        p.y+=p.speed;
-        if(p.y>canvas.height) p.y=0;
-    });
-
-    requestAnimationFrame(draw);
-}
-draw();
 </script>
 
 </body>
