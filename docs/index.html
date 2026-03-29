@@ -3,106 +3,255 @@
 <head>
 <meta charset="UTF-8">
 <title>Aspect Browser</title>
+
 <style>
-    body {
-        margin: 0;
-        height: 100vh;
-        background: #0f0f0f;
-        font-family: Arial, sans-serif;
-        color: white;
-        display: flex;
-        flex-direction: column;
-    }
+:root {
+    --bg: linear-gradient(135deg, #1a0033, #000000);
+    --anim: all 0.4s ease;
+}
 
-    .top {
-        text-align: center;
-        margin-top: 100px;
-        transition: 0.5s;
-    }
+body {
+    margin: 0;
+    height: 100vh;
+    background: var(--bg);
+    font-family: Arial;
+    color: white;
+    overflow: hidden;
+}
 
-    h1 {
-        font-size: 60px;
-        opacity: 0;
-        animation: fadeIn 2s ease forwards;
-    }
+/* PARTICLES */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
 
-    @keyframes fadeIn {
-        to { opacity: 1; }
-    }
+/* TOPBAR */
+.topbar {
+    display: none;
+    background: rgba(0,0,0,0.7);
+    padding: 10px;
+    align-items: center;
+    gap: 10px;
+}
 
-    .search-box {
-        margin-top: 20px;
-        display: flex;
-        justify-content: center;
-    }
+.topbar input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 10px;
+    border: none;
+}
 
-    input {
-        width: 400px;
-        padding: 15px;
-        font-size: 18px;
-        border: none;
-        outline: none;
-        border-radius: 30px 0 0 30px;
-    }
+/* BUTTONS */
+button {
+    background: #2a2a2a;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: var(--anim);
+}
+button:hover {
+    background: #444;
+}
 
-    button {
-        padding: 15px 20px;
-        font-size: 18px;
-        border: none;
-        cursor: pointer;
-        background: #1f1f1f;
-        color: white;
-        border-radius: 0 30px 30px 0;
-    }
+/* HOME */
+.home {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    transition: var(--anim);
+    z-index: 1;
+}
 
-    iframe {
-        flex: 1;
-        width: 100%;
-        border: none;
-        display: none;
-    }
+h1 {
+    font-size: 70px;
+    text-shadow: 0 0 20px purple, 0 0 40px white;
+    animation: fade 2s forwards;
+}
 
-    .version {
-        position: fixed;
-        bottom: 10px;
-        right: 15px;
-        font-size: 14px;
-        opacity: 0.6;
-    }
+@keyframes fade {
+    from {opacity:0; transform: translateY(20px);}
+    to {opacity:1; transform: translateY(0);}
+}
+
+.search {
+    margin-top: 20px;
+}
+
+.search input {
+    padding: 15px;
+    width: 400px;
+    border-radius: 30px;
+    border: none;
+}
+
+/* IFRAME */
+iframe {
+    width: 100%;
+    height: calc(100% - 50px);
+    border: none;
+    display: none;
+}
+
+/* SIDEBAR */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 200px;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    padding: 10px;
+    z-index: 2;
+}
+
+.settingsPanel {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 200px;
+    width: 300px;
+    height: 100%;
+    background: #111;
+    padding: 10px;
+}
+
+/* VERSION */
+.version {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    opacity: 0.6;
+}
 </style>
 </head>
+
 <body>
 
-<div class="top" id="topArea">
-    <h1>Aspect Browser</h1>
+<canvas id="particles"></canvas>
 
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Search the web...">
-        <button onclick="search()">➜</button>
+<div class="sidebar">
+    <button onclick="openSettings()">Settings</button>
+</div>
+
+<div class="settingsPanel" id="settings">
+    <button onclick="closeSettings()">← Back</button>
+    <h3>Theme</h3>
+
+    <button onclick="setGradient('purple')">Purple</button>
+    <button onclick="setGradient('blue')">Blue</button>
+    <button onclick="setGradient('red')">Red</button>
+
+    <h3>Options</h3>
+    <label><input type="checkbox" id="particlesToggle" checked> Particles</label><br>
+    <label><input type="checkbox" id="animToggle" checked> Animations</label><br><br>
+
+    <button onclick="saveSettings()">Save</button>
+</div>
+
+<div class="topbar" id="topbar">
+    <button onclick="goBack()">←</button>
+    <button onclick="goForward()">→</button>
+    <button onclick="goHome()">🏠</button>
+    <input id="urlBar">
+</div>
+
+<div class="home" id="home">
+    <h1>Aspect Browser</h1>
+    <div class="search">
+        <input id="searchInput" placeholder="Search...">
     </div>
 </div>
 
-<iframe id="browserFrame"></iframe>
+<iframe id="frame"></iframe>
 
-<div class="version">version 1.01 aspect</div>
+<div class="version">version 1.02 aspect</div>
 
 <script>
-function search() {
-    let query = document.getElementById("searchInput").value;
-    if(query.trim() !== "") {
-        let frame = document.getElementById("browserFrame");
-        frame.src = "https://duckduckgo.com/?q=" + encodeURIComponent(query);
+// SEARCH
+function search(q){
+    let query = q || document.getElementById("searchInput").value;
+    if(!query) return;
 
-        frame.style.display = "block";
-        document.getElementById("topArea").style.marginTop = "10px";
-    }
+    let frame = document.getElementById("frame");
+    frame.src = "https://lite.duckduckgo.com/lite/?q=" + encodeURIComponent(query);
+
+    frame.style.display = "block";
+    document.getElementById("home").style.display = "none";
+    document.getElementById("topbar").style.display = "flex";
+    document.getElementById("urlBar").value = query;
 }
 
-document.getElementById("searchInput").addEventListener("keydown", function(e) {
-    if (e.key === "Enter") {
-        search();
-    }
+// ENTER KEY
+document.getElementById("searchInput").addEventListener("keydown", e=>{
+    if(e.key==="Enter") search();
 });
+
+// NAV
+function goBack(){ document.getElementById("frame").contentWindow.history.back(); }
+function goForward(){ document.getElementById("frame").contentWindow.history.forward(); }
+function goHome(){
+    document.getElementById("frame").style.display="none";
+    document.getElementById("home").style.display="block";
+    document.getElementById("topbar").style.display="none";
+}
+
+// SETTINGS
+function openSettings(){
+    document.getElementById("settings").style.display="block";
+}
+function closeSettings(){
+    document.getElementById("settings").style.display="none";
+}
+
+function setGradient(type){
+    if(type==="purple") document.body.style.background="linear-gradient(135deg,#1a0033,#000)";
+    if(type==="blue") document.body.style.background="linear-gradient(135deg,#001f3f,#000)";
+    if(type==="red") document.body.style.background="linear-gradient(135deg,#3f0000,#000)";
+}
+
+function saveSettings(){
+    let particles = document.getElementById("particlesToggle").checked;
+    let anim = document.getElementById("animToggle").checked;
+
+    document.getElementById("particles").style.display = particles ? "block":"none";
+    document.documentElement.style.setProperty("--anim", anim ? "all 0.4s ease":"none");
+}
+
+// PARTICLES
+let canvas = document.getElementById("particles");
+let ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particles = [];
+
+for(let i=0;i<100;i++){
+    particles.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        speed: Math.random()*2+1
+    });
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="white";
+
+    particles.forEach(p=>{
+        ctx.fillRect(p.x,p.y,2,2);
+        p.y+=p.speed;
+        if(p.y>canvas.height) p.y=0;
+    });
+
+    requestAnimationFrame(draw);
+}
+draw();
 </script>
 
 </body>
