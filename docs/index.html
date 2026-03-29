@@ -1,70 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <title>Aspect 1.05</title>
 
 <style>
 body {
   margin:0;
-  font-family: Arial;
-  background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+  background:#0f0f0f;
   color:white;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
+  font-family:sans-serif;
 }
 
-h1 {
-  margin-top:80px;
-  font-size:48px;
-  font-weight:600;
-}
-
-#searchBox {
-  margin-top:30px;
-  width:500px;
+#topbar {
   display:flex;
+  padding:10px;
+  background:#1a1a1a;
   gap:10px;
 }
 
-input {
+#input {
   flex:1;
-  padding:12px;
+  padding:10px;
   border:none;
-  border-radius:8px;
-  outline:none;
-  font-size:16px;
+  border-radius:6px;
 }
 
 button {
-  padding:12px 20px;
+  padding:10px;
   border:none;
-  border-radius:8px;
+  border-radius:6px;
   background:#1e90ff;
   color:white;
   cursor:pointer;
 }
 
-#quickLinks {
-  margin-top:30px;
-  display:flex;
-  gap:15px;
-}
-
-.linkBtn {
-  padding:10px 15px;
-  background:#222;
-  border-radius:8px;
-  cursor:pointer;
-}
-
 iframe {
-  margin-top:40px;
-  width:90%;
-  height:70vh;
+  width:100%;
+  height:calc(100vh - 60px);
   border:none;
-  border-radius:10px;
   background:white;
 }
 </style>
@@ -72,16 +45,9 @@ iframe {
 
 <body>
 
-<h1>Aspect 1.05</h1>
-
-<div id="searchBox">
+<div id="topbar">
   <input id="input" placeholder="Search or enter URL">
   <button onclick="go()">Go</button>
-</div>
-
-<div id="quickLinks">
-  <div class="linkBtn" onclick="quick('https://duckduckgo.com')">DuckDuckGo</div>
-  <div class="linkBtn" onclick="quick('https://example.com')">Example</div>
 </div>
 
 <iframe id="frame"></iframe>
@@ -89,28 +55,23 @@ iframe {
 <script>
 const backend = "https://aspect-proxy-backend-production.up.railway.app/proxy?url=";
 
-function formatURL(input) {
-  if (!input.startsWith("http")) {
-    return "https://duckduckgo.com/?q=" + encodeURIComponent(input);
+function fixURL(val) {
+  if (!val.startsWith("http")) {
+    return "https://duckduckgo.com/?q=" + encodeURIComponent(val);
   }
-  return input;
+  return val;
 }
 
 function go() {
   let val = document.getElementById("input").value.trim();
   if (!val) return;
 
-  let url = formatURL(val);
+  let url = fixURL(val);
   document.getElementById("frame").src = backend + encodeURIComponent(url);
 }
 
-function quick(url) {
-  document.getElementById("frame").src = backend + encodeURIComponent(url);
-}
-
-// enter key support
-document.getElementById("input").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") go();
+document.getElementById("input").addEventListener("keydown", (e)=>{
+  if(e.key==="Enter") go();
 });
 </script>
 
